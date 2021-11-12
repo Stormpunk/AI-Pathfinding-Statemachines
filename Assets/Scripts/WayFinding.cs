@@ -24,6 +24,12 @@ public class WayFinding : MonoBehaviour
     public Text statusText;
     //text that shows what the current state is.
     public GameObject playerTarget;
+    public float maxAlarmValue;
+    public float currentAlarmValue;
+    //these two values will set the timer for the alarm states before the AI returns to its neutral "patrol" state
+    public Text alarmText;
+    //variable that will display the alarm time
+
     // Start is called before the first frame update
     void Start()
     {
@@ -31,6 +37,8 @@ public class WayFinding : MonoBehaviour
         isNeutral = true;
         isAttacking = false;
         isDefending = false;
+        maxAlarmValue = 60;
+        currentAlarmValue = maxAlarmValue;
     }
 
     // Update is called once per frame
@@ -48,13 +56,26 @@ public class WayFinding : MonoBehaviour
         if (isAttacking)
         {
             isNeutral = false;
+            isDefending = false;
             statusText.text = "Attacking!".ToString();
+            transform.position = Vector2.MoveTowards(transform.position, playerTarget.transform.position, (moveSpeed * 1.5f) * Time.deltaTime);
+            currentAlarmValue -= Time.deltaTime;
         }
         if (isDefending)
         {
             isNeutral = false;
+            isAttacking = false;
             statusText.text = "Defending!".ToString();
+            transform.position = Vector2.MoveTowards(transform.position, defenderTarget.transform.position, moveSpeed * Time.deltaTime);
+            currentAlarmValue -= Time.deltaTime;
         }
+        if(currentAlarmValue <= 0 && (isDefending || isAttacking))
+        {
+            isAttacking = false;
+            isDefending = false;
+            currentAlarmValue = maxAlarmValue;
+        }
+        alarmText.text = "Alarm Time: " + currentAlarmValue.ToString();
     }
     public void MoveToWayPoint()
     {
@@ -72,13 +93,11 @@ public class WayFinding : MonoBehaviour
     {
         isDefending = true;
         anim.SetBool("isDefending", true);
-        transform.position = Vector2.MoveTowards(transform.position, defenderTarget.transform.position, moveSpeed * Time.deltaTime);
     }
     public void AttackerState()
     {
         isAttacking = true;
-        anim.SetBool("isAttacking", true);
-        transform.position = Vector2.MoveTowards(transform.position, playerTarget.transform.position, (moveSpeed * 1.5f) * Time.deltaTime);
+        anim.SetBool("isChasing", true);
     }
 
 }
