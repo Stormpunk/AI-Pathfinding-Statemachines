@@ -39,6 +39,7 @@ public class WayFinding : MonoBehaviour
         isDefending = false;
         maxAlarmValue = 60;
         currentAlarmValue = maxAlarmValue;
+        //sets up the values that will be set later (default state, the maximum and current alarm timers.)
     }
 
     // Update is called once per frame
@@ -48,34 +49,39 @@ public class WayFinding : MonoBehaviour
         {
             isNeutral = true;
         }
+        //sets the default state to Neutral/"Patrol"
         if (isNeutral)
         {
             MoveToWayPoint();
             statusText.text = "Neutral".ToString();
+            anim.SetBool("isNeutral", true);
         }
+        //ensures the AI will move between waypoints and display its current state
         if (isAttacking)
         {
             isNeutral = false;
-            isDefending = false;
             statusText.text = "Attacking!".ToString();
             transform.position = Vector2.MoveTowards(transform.position, playerTarget.transform.position, (moveSpeed * 1.5f) * Time.deltaTime);
             currentAlarmValue -= Time.deltaTime;
+            //moves towards the attack target and displays its current state
         }
         if (isDefending)
         {
             isNeutral = false;
-            isAttacking = false;
             statusText.text = "Defending!".ToString();
             transform.position = Vector2.MoveTowards(transform.position, defenderTarget.transform.position, moveSpeed * Time.deltaTime);
             currentAlarmValue -= Time.deltaTime;
+            // moves to the defense node and displays its current state
         }
         if(currentAlarmValue <= 0 && (isDefending || isAttacking))
         {
             isAttacking = false;
             isDefending = false;
             currentAlarmValue = maxAlarmValue;
+            //resets the alarm and returns to the patrol state
         }
         alarmText.text = "Alarm Time: " + currentAlarmValue.ToString();
+        //displays the alarm time
     }
     public void MoveToWayPoint()
     {
@@ -88,15 +94,18 @@ public class WayFinding : MonoBehaviour
         {
             wayPointIndex = 0;
         }
+        //moves to the next waypoint, when it reaches that waypoint, sets the waypoint to go to as the next one up
     }
     public void DefenderState()
     {
         isDefending = true;
+        isAttacking = false;
         anim.SetBool("isDefending", true);
     }
     public void AttackerState()
     {
         isAttacking = true;
+        isDefending = false;
         anim.SetBool("isChasing", true);
     }
 
